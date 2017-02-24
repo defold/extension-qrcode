@@ -1,6 +1,7 @@
 [project]
-title = My project
+title = QRCode
 version = 0.1
+dependencies = https://github.com/defold/extension-camera/archive/master.zip
 
 [bootstrap]
 main_collection = /main/main.collectionc
