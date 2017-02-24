@@ -34,6 +34,10 @@ function init(self)
     else
         print("could not start camera capture")
     end
+    
+    if qrcode == nil then
+        print("could not find qrcode module")
+    end
 end
 
 function final(self)
@@ -47,6 +51,14 @@ function update(self, dt)
     if self.cameraframe then
         local pathmodelcamera = go.get("#sprite", "texture0")
         resource.set_texture(pathmodelcamera, self.cameratextureheader, self.cameraframe)
+        
+        local url = qrcode.scan(self.cameraframe, self.camerainfo.width, self.camerainfo.height)
+        
+        if url ~= nil then
+        	label.set_text("logo#qrcode", url)
+        else
+        	label.set_text("logo#qrcode", "...")
+        end
     end
     
     

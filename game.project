@@ -1,7 +1,7 @@
 [project]
 title = QRCode
 version = 0.1
-dependencies = https://github.com/defold/extension-camera/archive/master.zip
+dependencies = https://github.com/defold/extension-camera/archive/master.zip,https://github.com/andsve/dirtylarry/archive/master.zip
 
 [bootstrap]
 main_collection = /main/main.collectionc
@@ -10,8 +10,8 @@ main_collection = /main/main.collectionc
 game_binding = /input/game.input_bindingc
 
 [display]
-width = 1280
-height = 720
+width = 960
+height = 1280
 
 [physics]
 scale = 0.02
