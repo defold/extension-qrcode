@@ -30,6 +30,10 @@ struct QRCodeContext
 
 QRCodeContext g_QRContext;
 
+uint8_t* g_DebugPixels = 0;
+uint32_t g_DebugWidth = 0;
+uint32_t g_DebugHeight = 0;
+
 
 static int Scan(lua_State* L)
 {
@@ -38,6 +42,7 @@ static int Scan(lua_State* L)
     dmBuffer::HBuffer* buffer = dmScript::CheckBuffer(L, 1);
     int width = luaL_checkint(L, 2);
     int height = luaL_checkint(L, 3);
+    int flip = luaL_checkint(L, 4);
 
     struct quirc *qr;
 
@@ -46,12 +51,24 @@ static int Scan(lua_State* L)
         return luaL_error(L, "qrcode.scan: Failed to allocate memory");
     }
 
-    // int x,y,n;
-    // unsigned char* filedata = Xstbi_load("/Users/mathiaswesterdahl/work/external/quirc/defold.png", &x, &y, &n, 0);
-    // if( filedata )
+    uint8_t* filedata = 0;
+    // if( dmScript::IsBuffer(L, 4) )
     // {
-    //     width = x;
-    //     height = y;
+    //     dmBuffer::HBuffer* buffer2 = dmScript::CheckBuffer(L, 4);
+
+    //     uint8_t* file;
+    //     uint32_t filesize;
+    //     dmBuffer::GetBytes(*buffer2, (void**)&file, &filesize);
+
+    //     int x,y,n;
+    //     //filedata = Xstbi_load("/Users/mathiaswesterdahl/work/external/quirc/defold.png", &x, &y, &n, 0);
+    //     filedata = Xstbi_load_from_memory(file, filesize, &x, &y, &n, 0);
+    //     if( filedata )
+    //     {
+    //         width = x;
+    //         height = y;
+    //     }
+    //     printf("filedata: %p  %d %d  %d\n", filedata, width, height, n);
     // }
 
 
@@ -61,19 +78,19 @@ static int Scan(lua_State* L)
 
     uint8_t* image = quirc_begin(qr, &width, &height);
 
-    // if( filedata )
-    // {
-    //     memcpy(image, filedata, width*height);
+    if( filedata )
+    {
+        for( int y = 0; y < height; ++y )
+        {
+            for( int x = 0; x < width; ++x )
+            {
+                image[y * width + x] = filedata[y * width * 3 + x * 3];
+            }
+        }
 
-    //     for( int y = 0; y < height; ++y )
-    //     {
-    //         for( int x = 0; x < width; ++x )
-    //         {
-    //             image[y * width + x] = filedata[y * width * 3 + x * 3];
-    //         }
-    //     }
-    // }
-    // else
+        free(filedata);
+    }
+    else
     {
         uint8_t* data;
         uint32_t datasize;
@@ -86,17 +103,45 @@ static int Scan(lua_State* L)
                 float r = (float)data[y * width * 3 + x * 3 + 0] / 255.0f;
                 float g = (float)data[y * width * 3 + x * 3 + 1] / 255.0f;
                 float b = (float)data[y * width * 3 + x * 3 + 2] / 255.0f;
-                image[y * width + x] = (uint8_t)(((r+g+b)/3.0f) * 255.0f);
+
+                float value = (r+g+b)/3.0f;
+
+                value = value*value;
+                value += 0.1f;
+                if(value>1.0f)
+                {
+                    value = 1.0f;
+                }
+
+                if( flip == 0 )
+                    image[y * width + x] = (uint8_t)(value * 255.0f);
+                else
+                    image[y * width + (width - x - 1)] = (uint8_t)(value * 255.0f);
                 //image[y * width + x] = data[y * width * 3 + x * 3];
             }
         }
 
     }
 
+    if( g_DebugPixels != 0 )
+    {
+        free(g_DebugPixels);
+    }
+    g_DebugWidth = width;
+    g_DebugHeight = height;
+    g_DebugPixels = (uint8_t*)malloc( width * height * 3 );
+    for( int i = 0; i < width * height; ++i )
+    {
+        g_DebugPixels[i*3 + 0] = image[i];
+        g_DebugPixels[i*3 + 1] = image[i];
+        g_DebugPixels[i*3 + 2] = image[i];
+    }
+
     quirc_end(qr);
 
 
 //stbi_write_png("/Users/mathiaswesterdahl/work/external/quirc/test.png", width, height, 1, image, width);
+//printf("Wrote: /Users/mathiaswesterdahl/work/external/quirc/test.png\n");
 
     int num_codes = quirc_count(qr);
     for( int i = 0; i < num_codes; i++)
@@ -132,9 +177,37 @@ static int Scan(lua_State* L)
 }
 
 
+static int GetDebugImage(lua_State* L)
+{
+    DM_LUA_STACK_CHECK(L, 1);
+
+    const dmBuffer::StreamDeclaration streams_decl[] = {
+        {dmHashString64("rgb"), dmBuffer::VALUE_TYPE_UINT8, 3},
+    };
+
+    dmBuffer::HBuffer buffer;
+    dmBuffer::Result r = dmBuffer::Allocate(g_DebugWidth*g_DebugHeight, streams_decl, 1, &buffer);
+    if (r != dmBuffer::RESULT_OK)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    uint8_t* data;
+    uint32_t datasize;
+    dmBuffer::GetBytes(buffer, (void**)&data, &datasize);
+
+    memcpy(data, g_DebugPixels, datasize);
+
+    dmScript::PushBuffer(L, buffer);
+
+    return 1;
+}
+
 static const luaL_reg Module_methods[] =
 {
     {"scan", Scan},
+    {"get_debug_image", GetDebugImage},
     {0, 0}
 };
 
