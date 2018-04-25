@@ -39,7 +39,7 @@ static int Scan(lua_State* L)
 {
     DM_LUA_STACK_CHECK(L, 1);
 
-    dmBuffer::HBuffer* buffer = dmScript::CheckBuffer(L, 1);
+    dmScript::LuaHBuffer* buffer = dmScript::CheckBuffer(L, 1);
     int width = luaL_checkint(L, 2);
     int height = luaL_checkint(L, 3);
     int flip = luaL_checkint(L, 4);
@@ -94,7 +94,7 @@ static int Scan(lua_State* L)
     {
         uint8_t* data;
         uint32_t datasize;
-        dmBuffer::GetBytes(*buffer, (void**)&data, &datasize);
+        dmBuffer::GetBytes(buffer->m_Buffer, (void**)&data, &datasize);
 
         for( int y = 0; y < height; ++y )
         {
@@ -154,7 +154,7 @@ static int Scan(lua_State* L)
         quirc_decode_error_t err = quirc_decode(&code, &data);
         if (err)
         {
-            printf("qrcode.scan: quirc decode error: %s  %s\n", quirc_strerror(err));
+            printf("qrcode.scan: quirc decode error: %s\n", quirc_strerror(err));
             num_codes = 0;
             //return luaL_error(L, "qrcode.scan: quirc decode error: %s\n", quirc_strerror(err));
         }
@@ -186,7 +186,7 @@ static int GetDebugImage(lua_State* L)
     };
 
     dmBuffer::HBuffer buffer;
-    dmBuffer::Result r = dmBuffer::Allocate(g_DebugWidth*g_DebugHeight, streams_decl, 1, &buffer);
+    dmBuffer::Result r = dmBuffer::Create(g_DebugWidth*g_DebugHeight, streams_decl, 1, &buffer);
     if (r != dmBuffer::RESULT_OK)
     {
         lua_pushnil(L);
@@ -199,7 +199,8 @@ static int GetDebugImage(lua_State* L)
 
     memcpy(data, g_DebugPixels, datasize);
 
-    dmScript::PushBuffer(L, buffer);
+    dmScript::LuaHBuffer luabuf = { buffer, true };
+    PushBuffer(L, luabuf);
 
     return 1;
 }
