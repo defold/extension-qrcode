@@ -3,6 +3,7 @@ title = QRCode
 version = 0.1
 dependencies = https://github.com/defold/extension-camera/archive/master.zip,https://github.com/andsve/dirtylarry/archive/master.zip
 custom_resources = main/images/defold.png
+include_dirs = qrcode
 
 [bootstrap]
 main_collection = /main/main.collectionc

@@ -13,11 +13,11 @@
 
 #include "quirc/quirc.h"
 
-// #define STB_IMAGE_IMPLEMENTATION
-// #include "stb_image.h"
-// #define STB_IMAGE_WRITE_IMPLEMENTATION
-// #include "stb_image_write.h"
+#define JC_QRENCODE_IMPLEMENTATION
+#include "jc_qrencode.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 // GENERATE
 // https://github.com/nayuki/QR-Code-generator
@@ -80,7 +80,7 @@ static int Scan(lua_State* L)
                 image[y * width + (width - x - 1)] = (uint8_t)(value * 255.0f);
         }
     }
-    
+
     quirc_end(qr);
 
     int num_codes = quirc_count(qr);
@@ -113,14 +113,96 @@ static int Scan(lua_State* L)
     return 1;
 }
 
+static int save_image(JCQRCode* qr, const char* path)
+{
+    int32_t size = qr->size;
+
+    int32_t border = 0;
+    int32_t scale = 1;
+    int32_t newsize = scale*(size + 2 * border);
+    uint8_t* large = (uint8_t*)malloc( newsize * newsize );
+
+    memset(large, 255, newsize*newsize);
+
+    for( int y = 0; y < size*scale; ++y )
+    {
+        for( int x = 0; x < size*scale; ++x )
+        {
+            uint8_t module = qr->data[(y/scale)*256 + (x/scale)];
+            large[(y + scale*border) * newsize + x + scale*border] = module;
+        }
+    }
+
+    int result = stbi_write_png(path, newsize, newsize, 1, large, newsize);
+    free(large);
+
+    if(result)
+        printf("Wrote to %s\n", path);
+    else
+        printf("Failed to write to %s\n", path);
+    return result;
+}
+
+static dmBuffer::HBuffer GenerateImage(JCQRCode* qr, uint32_t* outsize)
+{
+    int32_t size = qr->size;
+    int32_t border = 2;
+    int32_t scale = 8;
+    int32_t newsize = scale*(size + 2 * border);
+
+    dmBuffer::StreamDeclaration streams_decl[] = {
+        {dmHashString64("data"), dmBuffer::VALUE_TYPE_UINT8, 1}
+    };
+
+    dmBuffer::HBuffer buffer = 0;
+    dmBuffer::Result result = dmBuffer::Create(newsize * newsize, streams_decl, 1, &buffer);
+    if (result != dmBuffer::RESULT_OK )
+    {
+        return 0;
+    }
+
+    uint8_t* data;
+    uint32_t datasize;
+    dmBuffer::GetBytes(buffer, (void**)&data, &datasize);
+
+    memset(data, 255, newsize*newsize);
+
+    for( int y = 0; y < size*scale; ++y )
+    {
+        for( int x = 0; x < size*scale; ++x )
+        {
+            uint8_t module = qr->data[(y/scale)*256 + (x/scale)];
+            data[(y + scale*border) * newsize + x + scale*border] = module;
+        }
+    }
+
+    if (outsize)
+        *outsize = newsize;
+    return buffer;
+}
+
 static int Generate(lua_State* L)
 {
-    DM_LUA_STACK_CHECK(L, 1);
+    DM_LUA_STACK_CHECK(L, 2);
 
-    dmScript::LuaHBuffer* buffer = dmScript::CheckBuffer(L, 1);
-    int width = luaL_checkint(L, 2);
-    int height = luaL_checkint(L, 3);
-    int flip = luaL_checkint(L, 4);
+    const char* text = luaL_checkstring(L, 1);
+
+    JCQRCode* qr = jc_qrencode((const uint8_t*)text, (uint32_t)strlen(text));
+    if( !qr )
+    {
+        return DM_LUA_ERROR("Failed to encode text: '%s'\n", text);
+    }
+
+    uint32_t outsize = 0;
+    dmBuffer::HBuffer buffer = GenerateImage(qr, &outsize);
+
+    free(qr); // free the qr code
+
+    // Transfer ownership to Lua
+    dmScript::LuaHBuffer luabuffer = {buffer, true};
+    dmScript::PushBuffer(L, luabuffer);
+    lua_pushinteger(L, outsize);
+    return 2;
 }
 
 static const luaL_reg Module_methods[] =

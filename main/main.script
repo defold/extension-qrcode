@@ -22,12 +22,6 @@ local function start_scan(self)
             type=resource.TEXTURE_TYPE_2D,
             format=resource.TEXTURE_FORMAT_RGB,
             num_mip_maps=1 }
-
-            self.debugtextureheader = {width=self.camerainfo.width,
-            height=self.camerainfo.height,
-            type=resource.TEXTURE_TYPE_2D,
-            format=resource.TEXTURE_FORMAT_RGB,
-            num_mip_maps=1 }
         end
     else
         print("could not start camera capture")
@@ -43,10 +37,10 @@ local function end_scan(self)
 end
 
 local function update_scan(self)
-    
+
     if self.cameraframe ~= nil then
-        local pathmodelcamera = go.get("#sprite", "texture0")
-        resource.set_texture(pathmodelcamera, self.cameratextureheader, self.cameraframe)
+        local texturepath = go.get("#sprite", "texture0")
+        resource.set_texture(texturepath, self.cameratextureheader, self.cameraframe)
 
         local text = qrcode.scan(self.cameraframe, self.camerainfo.width, self.camerainfo.height, self.flip)
 
@@ -58,8 +52,57 @@ local function update_scan(self)
     end
 end
 
+local function rescale_texture_old(src_buf, src_size, dst_buf, dst_size)
+    local src = buffer.get_stream(src_buf, hash("rgb"))
+    local dst = buffer.get_stream(dst_buf, hash("rgb"))
+    print("src", src_size, src_size, src_size*src_size*3)
+    print("dst", dst_size, dst_size, dst_size*dst_size*3)
+    for dy=0,dst_size-1 do
+        local v = dy / dst_size
+        for dx=0,dst_size-1 do
+            local u = dx / dst_size
+            local dst_index = (dy * dst_size + dx) * 3 + 1
+            local src_index = (math.floor(v * src_size) * src_size + math.floor(u * src_size)) * 3 + 1
+            print(dx, dy, dst_index, src_index)
+            dst[dst_index + 0] = src[src_index + 0]
+            dst[dst_index + 1] = src[src_index + 1]
+            dst[dst_index + 2] = src[src_index + 2]
+        end
+    end
+end
+
+
+local function rescale_texture(src_buf, src_size, dst_buf, dst_size)
+    local src = buffer.get_stream(src_buf, hash("rgb"))
+    local dst = buffer.get_stream(dst_buf, hash("rgb"))
+    print("src", src_size, src_size, src_size*src_size*3)
+    print("dst", dst_size, dst_size, dst_size*dst_size*3)
+    for dy=0,dst_size-1 do
+        local v = dy / dst_size
+        for dx=0,dst_size-1 do
+            local u = dx / dst_size
+            local dst_index = (dy * dst_size + dx) * 3 + 1
+            local src_index = (math.floor(v * src_size) * src_size + math.floor(u * src_size)) * 3 + 1
+            print(dx, dy, dst_index, src_index)
+            dst[dst_index + 0] = src[src_index + 0]
+            dst[dst_index + 1] = src[src_index + 1]
+            dst[dst_index + 2] = src[src_index + 2]
+        end
+    end
+end
+
+
 local function generate_qrcode(self, text)
-    --self.qrcode = 
+    local qrcode, qrsize = qrcode.generate(text)
+
+    local qrcodetextureheader = {width=qrsize,
+                                height=qrsize,
+                                type=resource.TEXTURE_TYPE_2D,
+                                format=resource.TEXTURE_FORMAT_LUMINANCE,
+                                num_mip_maps=1 }
+
+    local texturepath = go.get("#sprite", "texture0")
+    resource.set_texture(texturepath, qrcodetextureheader, qrcode)
 end
 
 function init(self)
@@ -68,11 +111,11 @@ function init(self)
     local screen_height = sys.get_config("display.height", 800)
     local scale_width = screen_width / logosize
     local scale_height = screen_height / logosize
-    
+
     go.set("#sprite", "scale", vmath.vector3(scale_width, scale_height, 1) )
-    
+
     start_scan(self)
-    
+
     if qrcode == nil then
         print("could not find qrcode module")
     end
@@ -88,13 +131,11 @@ function update(self, dt)
 
     if self.mode == "SCAN" then
         update_scan(self)
-    end     
+    end
 end
 
 function on_input(self, action_id, action)
     if action_id == hash("click") or action_id == hash("touch") then
-        --pprint(action)
-        --label.set_text("logo#qrcode", "...")
         print("foo")
     end
 end
@@ -107,7 +148,7 @@ function on_message(self, message_id, message)
             pprint(self.cameraframe)
         else
             end_scan(self)
-            generate_qrcode(self)
+            generate_qrcode(self, message.text)
         end
         self.mode = message.mode
     end
