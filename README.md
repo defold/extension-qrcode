@@ -10,5 +10,5 @@ https://github.com/dlbeer/quirc
 
 ## Encoder
 
-https://github.com/nayuki/QR-Code-generator
+https://github.com/JCash/qrcode
 
