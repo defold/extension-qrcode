@@ -11,8 +11,8 @@ The encoder supports the traditional QR code type.
 Push the Scan button to start scanning for qrcodes. The camera starts running and the the app scans the
 camera image for the first qrcode. Similarly, push the QRCode button to create a qrcode:
 <br/>
-<img src="https://raw.githubusercontent.com/defold/extension-qrcode/master/screenshots/scan.png" width="350">
-<img src="https://raw.githubusercontent.com/defold/extension-qrcode/master/screenshots/create.png" width="350">
+![scan](screenshots/scan.png)
+![create](screenshots/create.png)
 
 # Lua api:
 
