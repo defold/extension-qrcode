@@ -22,3 +22,23 @@ shared_state = 1
 
 [library]
 include_dirs = qrcode
+
+[ios]
+bundle_identifier = com.defold.qrcode
+infoplist = /Info.plist
+app_icon_57x57 = /icons/Icon-57.png
+app_icon_72x72 = /icons/Icon-72.png
+app_icon_76x76 = /icons/Icon-76.png
+app_icon_114x114 = /icons/Icon-114.png
+app_icon_120x120 = /icons/Icon-120.png
+app_icon_144x144 = /icons/Icon-144.png
+app_icon_152x152 = /icons/Icon-152.png
+app_icon_167x167 = /icons/Icon-167.png
+app_icon_180x180 = /icons/Icon-180.png
+
+[android]
+package = com.defold.qrcode
+
+[osx]
+bundle_identifier = com.defold.qrcode
+

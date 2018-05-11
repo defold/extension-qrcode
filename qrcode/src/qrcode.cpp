@@ -16,9 +16,6 @@
 #define JC_QRENCODE_IMPLEMENTATION
 #include "jc_qrencode.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 // GENERATE
 // https://github.com/nayuki/QR-Code-generator
 
@@ -37,7 +34,7 @@ static int Scan(lua_State* L)
     dmScript::LuaHBuffer* buffer = dmScript::CheckBuffer(L, 1);
     int width = luaL_checkint(L, 2);
     int height = luaL_checkint(L, 3);
-    int flip = luaL_checkint(L, 4);
+    int flip_x = luaL_checkint(L, 4);
 
     struct quirc* qr;
 
@@ -74,7 +71,7 @@ static int Scan(lua_State* L)
                 value = 1.0f;
             }
 
-            if( flip == 0 )
+            if( flip_x == 0 )
                 image[y * width + x] = (uint8_t)(value * 255.0f);
             else
                 image[y * width + (width - x - 1)] = (uint8_t)(value * 255.0f);
@@ -113,36 +110,6 @@ static int Scan(lua_State* L)
     return 1;
 }
 
-static int save_image(JCQRCode* qr, const char* path)
-{
-    int32_t size = qr->size;
-
-    int32_t border = 0;
-    int32_t scale = 1;
-    int32_t newsize = scale*(size + 2 * border);
-    uint8_t* large = (uint8_t*)malloc( newsize * newsize );
-
-    memset(large, 255, newsize*newsize);
-
-    for( int y = 0; y < size*scale; ++y )
-    {
-        for( int x = 0; x < size*scale; ++x )
-        {
-            uint8_t module = qr->data[(y/scale)*256 + (x/scale)];
-            large[(y + scale*border) * newsize + x + scale*border] = module;
-        }
-    }
-
-    int result = stbi_write_png(path, newsize, newsize, 1, large, newsize);
-    free(large);
-
-    if(result)
-        printf("Wrote to %s\n", path);
-    else
-        printf("Failed to write to %s\n", path);
-    return result;
-}
-
 static dmBuffer::HBuffer GenerateImage(JCQRCode* qr, uint32_t* outsize)
 {
     int32_t size = qr->size;
@@ -171,7 +138,8 @@ static dmBuffer::HBuffer GenerateImage(JCQRCode* qr, uint32_t* outsize)
     {
         for( int x = 0; x < size*scale; ++x )
         {
-            uint8_t module = qr->data[(y/scale)*256 + (x/scale)];
+            int flip_y = size*scale - y - 1; // flip it so we can easily pass it as a texture later on
+            uint8_t module = qr->data[(flip_y/scale)*256 + (x/scale)];
             data[(y + scale*border) * newsize + x + scale*border] = module;
         }
     }

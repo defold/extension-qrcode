@@ -47,50 +47,11 @@ local function update_scan(self)
         if text ~= nil then
             msg.post("gui", "set_text", {text=text})
             end_scan(self)
+            self.mode = "IDLE"
             return
         end
     end
 end
-
-local function rescale_texture_old(src_buf, src_size, dst_buf, dst_size)
-    local src = buffer.get_stream(src_buf, hash("rgb"))
-    local dst = buffer.get_stream(dst_buf, hash("rgb"))
-    print("src", src_size, src_size, src_size*src_size*3)
-    print("dst", dst_size, dst_size, dst_size*dst_size*3)
-    for dy=0,dst_size-1 do
-        local v = dy / dst_size
-        for dx=0,dst_size-1 do
-            local u = dx / dst_size
-            local dst_index = (dy * dst_size + dx) * 3 + 1
-            local src_index = (math.floor(v * src_size) * src_size + math.floor(u * src_size)) * 3 + 1
-            print(dx, dy, dst_index, src_index)
-            dst[dst_index + 0] = src[src_index + 0]
-            dst[dst_index + 1] = src[src_index + 1]
-            dst[dst_index + 2] = src[src_index + 2]
-        end
-    end
-end
-
-
-local function rescale_texture(src_buf, src_size, dst_buf, dst_size)
-    local src = buffer.get_stream(src_buf, hash("rgb"))
-    local dst = buffer.get_stream(dst_buf, hash("rgb"))
-    print("src", src_size, src_size, src_size*src_size*3)
-    print("dst", dst_size, dst_size, dst_size*dst_size*3)
-    for dy=0,dst_size-1 do
-        local v = dy / dst_size
-        for dx=0,dst_size-1 do
-            local u = dx / dst_size
-            local dst_index = (dy * dst_size + dx) * 3 + 1
-            local src_index = (math.floor(v * src_size) * src_size + math.floor(u * src_size)) * 3 + 1
-            print(dx, dy, dst_index, src_index)
-            dst[dst_index + 0] = src[src_index + 0]
-            dst[dst_index + 1] = src[src_index + 1]
-            dst[dst_index + 2] = src[src_index + 2]
-        end
-    end
-end
-
 
 local function generate_qrcode(self, text)
     local qrcode, qrsize = qrcode.generate(text)
@@ -128,7 +89,6 @@ function final(self)
 end
 
 function update(self, dt)
-
     if self.mode == "SCAN" then
         update_scan(self)
     end
