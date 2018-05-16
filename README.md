@@ -6,6 +6,9 @@ It relies on [buffers](https://www.defold.com/ref/buffer/).
 For the supported set of QRCodes to decode, see the documentation for [Quirc decoded](https://github.com/dlbeer/quirc)
 The encoder supports the traditional QR code type.
 
+The QRCode extension itself should be supported on all platforms. However, the example app relies on getting images from the camera
+and that extension is currently only supports OSX, iOS and Android (and the Android support is very work-in-progress)
+
 # Example app
 
 Push the Scan button to start scanning for qrcodes. The camera starts running and the the app scans the

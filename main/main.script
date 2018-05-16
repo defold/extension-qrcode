@@ -7,7 +7,7 @@ local function start_scan(self)
         local quality = camera.CAPTURE_QUALITY_HIGH
         local type = camera.CAMERA_TYPE_FRONT
         self.flip = 0
-        if sysinfo.system_name == 'iPhone OS' then
+        if sysinfo.system_name == 'iPhone OS' or sysinfo.system_name == 'Android' then
             type = camera.CAMERA_TYPE_BACK
             quality = camera.CAPTURE_QUALITY_MEDIUM
             self.flip = 1

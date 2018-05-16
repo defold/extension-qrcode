@@ -1,7 +1,7 @@
 [project]
 title = QRCode
 version = 0.1
-dependencies = https://github.com/defold/extension-camera/archive/master.zip,https://github.com/andsve/dirtylarry/archive/master.zip
+dependencies = https://github.com/defold/extension-camera/archive/dev-android.zip,https://github.com/andsve/dirtylarry/archive/master.zip
 custom_resources = main/images/defold.png
 
 [bootstrap]
@@ -38,6 +38,7 @@ app_icon_180x180 = /icons/Icon-180.png
 
 [android]
 package = com.defold.qrcode
+manifest = /AndroidManifest.xml
 
 [osx]
 bundle_identifier = com.defold.qrcode
