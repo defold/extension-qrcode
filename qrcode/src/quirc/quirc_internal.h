@@ -31,6 +31,10 @@
 
 #define QUIRC_PERSPECTIVE_PARAMS	8
 
+#if defined(DM_PLATFORM_ANDROID)
+	#define UINT8_MAX 255
+#endif
+
 #if QUIRC_MAX_REGIONS < UINT8_MAX
 typedef uint8_t quirc_pixel_t;
 #elif QUIRC_MAX_REGIONS < UINT16_MAX
