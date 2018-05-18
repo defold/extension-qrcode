@@ -1,7 +1,7 @@
 [project]
 title = QRCode
 version = 0.1
-dependencies = https://github.com/defold/extension-camera/archive/dev-android.zip,https://github.com/andsve/dirtylarry/archive/master.zip
+dependencies = https://github.com/defold/extension-camera/archive/dev-android2.zip,https://github.com/andsve/dirtylarry/archive/master.zip
 custom_resources = main/images/defold.png
 
 [bootstrap]

@@ -19,6 +19,11 @@
 #include <math.h>
 #include "quirc_internal.h"
 
+#ifdef WIN32
+#include <malloc.h>
+#define alloca _alloca
+#endif
+
 /************************************************************************
  * Linear algebra routines
  */
@@ -195,8 +200,10 @@ static void threshold(struct quirc *q)
 	if (threshold_s < THRESHOLD_S_MIN)
 		threshold_s = THRESHOLD_S_MIN;
 
+	int* row_average = (int*)alloca(q->w * sizeof(int));
+
 	for (y = 0; y < q->h; y++) {
-		int row_average[q->w];
+		//int row_average[q->w];
 
 		memset(row_average, 0, sizeof(row_average));
 
