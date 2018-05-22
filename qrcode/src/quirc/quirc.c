@@ -72,14 +72,14 @@ int quirc_count(const struct quirc *q)
 }
 
 static const char *const error_table[] = {
-	"Success",
-	"Invalid grid size",
-	"Invalid version",
-	"Format data ECC failure",
-	"ECC failure",
-	"Unknown data type",
-	"Data overflow",
-	"Data underflow"
+	[QUIRC_SUCCESS] = "Success",
+	[QUIRC_ERROR_INVALID_GRID_SIZE] = "Invalid grid size",
+	[QUIRC_ERROR_INVALID_VERSION] = "Invalid version",
+	[QUIRC_ERROR_FORMAT_ECC] = "Format data ECC failure",
+	[QUIRC_ERROR_DATA_ECC] = "ECC failure",
+	[QUIRC_ERROR_UNKNOWN_DATA_TYPE] = "Unknown data type",
+	[QUIRC_ERROR_DATA_OVERFLOW] = "Data overflow",
+	[QUIRC_ERROR_DATA_UNDERFLOW] = "Data underflow"
 };
 
 const char *quirc_strerror(quirc_decode_error_t err)

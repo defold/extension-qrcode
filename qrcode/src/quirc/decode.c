@@ -42,9 +42,9 @@ static const uint8_t gf16_log[16] = {
 };
 
 static const struct galois_field gf16 = {
-	15,
-	gf16_log,
-	gf16_exp
+	.p = 15,
+	.log = gf16_log,
+	.exp = gf16_exp
 };
 
 static const uint8_t gf256_exp[256] = {
@@ -118,9 +118,9 @@ static const uint8_t gf256_log[256] = {
 };
 
 const static struct galois_field gf256 = {
-	255,
-	gf256_log,
-	gf256_exp
+	.p = 255,
+	.log = gf256_log,
+	.exp = gf256_exp
 };
 
 /************************************************************************
