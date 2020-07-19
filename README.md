@@ -29,7 +29,7 @@ Scans an image buffer for any qrcode.
 
   `height` The height of the image, in texels
 
-  `flip_x` A boolean flag that tells the decoder to flip the image in X first.
+  `flip_x` A boolean flag (1 or 0) that tells the decoder to flip the image in X first.
 
   -> `string` Returns a the text from the qrcode if successful. Returns nil otherwise
 
