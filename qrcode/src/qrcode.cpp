@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #define EXTENSION_NAME QRCode
 #define LIB_NAME "QRCode"
