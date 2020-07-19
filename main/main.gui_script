@@ -13,9 +13,17 @@ function init(self)
 	gui.set_position(bg, vmath.vector3(screen_width/2, screen_height/2, 0))
 	gui.set_size(bg, vmath.vector3(screen_width, screen_height, 0))
 
-	local camera = gui.get_node("camera")
-	gui.set_position(camera, vmath.vector3(screen_width/2, screen_height/2, 0))
-	gui.set_size(camera, vmath.vector3(screen_width/2, screen_height/2, 0))
+	local cameranode = gui.get_node("camera")
+	gui.set_position(cameranode, vmath.vector3(screen_width/2, screen_height/2, 0))
+	gui.set_size(cameranode, vmath.vector3(screen_width/2, screen_height/2, 0))
+
+	self.camera_enabled = camera ~= nil
+	if not self.camera_enabled then
+		local labelnode = gui.get_node("scan_bn/larrylabel")
+		local iconnode = gui.get_node("camera_icon")
+		gui.set_color(labelnode, vmath.vector4(0.5,0.5,0.5,1))
+		gui.set_color(iconnode, vmath.vector4(0.5,0.5,0.5,1))
+	end
 
 	local qrcode = gui.get_node("qrcode")
 	gui.set_position(qrcode, vmath.vector3(screen_width/2, screen_height/2, 0))
@@ -54,9 +62,11 @@ local function isempty(s)
 end
 
 function on_input(self, action_id, action)
-	dirtylarry:button("scan_bn", action_id, action, function ()
-		msg.post("controller", "click", {mode="SCAN"})
-	end)
+	if self.camera_enabled then
+		dirtylarry:button("scan_bn", action_id, action, function ()
+			msg.post("controller", "click", {mode="SCAN"})
+		end)
+	end
 	dirtylarry:button("generate_bn", action_id, action, function ()
 		local text = sys.get_sys_info().device_ident
 		if isempty(text) then
