@@ -7,7 +7,6 @@
 #define MODULE_NAME "qrcode"
 
 // Defold SDK
-#define DLIB_LOG_DOMAIN LIB_NAME
 #include <dmsdk/sdk.h>
 
 #include "quirc/quirc.h"
@@ -166,7 +165,7 @@ static int Generate(lua_State* L)
     free(qr); // free the qr code
 
     // Transfer ownership to Lua
-    dmScript::LuaHBuffer luabuffer = {buffer, true};
+    dmScript::LuaHBuffer luabuffer(buffer, dmScript::OWNER_LUA);
     dmScript::PushBuffer(L, luabuffer);
     lua_pushinteger(L, outsize);
     return 2;
