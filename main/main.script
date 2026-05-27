@@ -13,16 +13,22 @@ local function start_scan(self)
             self.flip = 1
         end
 
-        if camera.start_capture(type, quality) then
-            self.cameraframe = camera.get_frame()
-            self.camerainfo = camera.get_info()
-            print("Initialized camera")
-            self.cameratextureheader = {width=self.camerainfo.width,
-            height=self.camerainfo.height,
-            type=resource.TEXTURE_TYPE_2D,
-            format=resource.TEXTURE_FORMAT_RGB,
-            num_mip_maps=1 }
-        end
+        camera.start_capture(type, quality, function(self, status)
+            if status == camera.CAMERA_STARTED then
+                self.cameraframe = camera.get_frame()
+                self.camerainfo = camera.get_info()
+                print("Initialized camera")
+                self.cameratextureheader = {width=self.camerainfo.width,
+                height=self.camerainfo.height,
+                type=graphics.TEXTURE_TYPE_2D,
+                format=graphics.TEXTURE_FORMAT_RGB,
+                num_mip_maps=1 }
+            elseif status == camera.CAMERA_STOPPED then
+                self.cameraframe = nil
+            elseif status == camera.CAMERA_NOT_PERMITTED or status == camera.CAMERA_ERROR then
+                print("could not start camera capture")
+            end
+        end)
     else
         print("could not start camera capture")
     end
@@ -58,8 +64,8 @@ local function generate_qrcode(self, text)
 
     local qrcodetextureheader = {width=qrsize,
                                 height=qrsize,
-                                type=resource.TEXTURE_TYPE_2D,
-                                format=resource.TEXTURE_FORMAT_LUMINANCE,
+                                type=graphics.TEXTURE_TYPE_2D,
+                                format=graphics.TEXTURE_FORMAT_LUMINANCE,
                                 num_mip_maps=1 }
 
     local texturepath = go.get("#sprite", "texture0")
@@ -68,8 +74,8 @@ end
 
 function init(self)
     local logosize = 256
-    local screen_width = sys.get_config("display.width", 600)
-    local screen_height = sys.get_config("display.height", 800)
+    local screen_width = sys.get_config_int("display.width", 600)
+    local screen_height = sys.get_config_int("display.height", 800)
     local scale_width = screen_width / logosize
     local scale_height = screen_height / logosize
 
@@ -113,5 +119,3 @@ function on_message(self, message_id, message)
         self.mode = message.mode
     end
 end
-
-

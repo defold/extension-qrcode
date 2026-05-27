@@ -2,10 +2,6 @@ name: "QRCode"
 
 platforms:
 
-    x86-osx:
-        context:
-            flags:      ["-stdlib=libc++", "-std=c++11"]
-            
-    x86_64-osx:
+    osx:
         context:
             flags:      ["-stdlib=libc++", "-std=c++11"]
